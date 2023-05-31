@@ -171,4 +171,20 @@ impl Doppler {
         .await
         .map(|_| ())
     }
+
+    pub async fn map(&mut self, func: &str) -> Result<(), DopplerError> {
+        let shards = self.shards.clone();
+
+        self.call(false, "map", vec![(); shards.len()], |index, _| {
+            let shard = shards[index].1.clone();
+            let func = func.to_string();
+
+            Box::pin(async move {
+                shard.map(context::current(), func).await?;
+                Ok(())
+            })
+        })
+        .await
+        .map(|_| ())
+    }
 }

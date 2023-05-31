@@ -17,7 +17,7 @@ pub trait Worker {
     async fn ping() -> ();
     async fn get() -> Vec<u8>;
     async fn load(data: Vec<u8>) -> ();
-    async fn map() -> ();
+    async fn map(func: String) -> ();
 }
 
 #[derive(Clone)]
@@ -74,7 +74,22 @@ impl Worker for WorkerServer {
     }
 
     type MapFut = future::Ready<()>;
-    fn map(self, _: context::Context) -> Self::MapFut {
+    fn map(self, _: context::Context, func: String) -> Self::MapFut {
+        use rhai::{Engine, Func};
+
+        let engine = Engine::new();
+
+        let func =
+            Func::<(u8,), u8>::create_from_script(engine, &format!("fn map(elem){0}", func), "map")
+                .unwrap();
+
+        let mut data = self.data.lock().unwrap();
+
+        *data = data
+            .iter()
+            .map(|elem| func(*elem).unwrap())
+            .collect::<Vec<_>>();
+
         future::ready(())
     }
 }

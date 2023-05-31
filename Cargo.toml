@@ -7,6 +7,8 @@ edition = "2021"
 
 [dependencies]
 futures = "0.3"
+rhai = "1.14.0"
+serde = "1.0.163"
 tarpc = { version = "0.33.0", features = ["full"] }
 thiserror = "1.0.40"
 tokio = { version = "1.28.2", features = ["full"] }
